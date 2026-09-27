@@ -1,0 +1,58 @@
+name: Publish New Year website
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ilyasemenovya/mun
+          ref: 1b0826e24204bf4c48e18dafef0f9736e7093f3a
+          path: source
+          persist-credentials: false
+      - name: Prepare current page and booking form
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import ast, json, shutil
+          from pathlib import Path
+          out = Path('public')
+          shutil.copytree('source/site/new-year', out)
+          release = Path('source/deploy/mun-finish-form.sh').read_text()
+          block = release.split("<<'MUN_STAGE'\n", 1)[1].split('\nMUN_STAGE', 1)[0]
+          assignment = next(n for n in ast.parse(block).body if isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == 'files' for t in n.targets))
+          files = json.loads(ast.literal_eval(assignment.value.args[0]))
+          for name in ('form.js', 'form.css', 'privacy.html', 'consent.html'):
+              (out / name).write_text(files[name])
+          s = (out / 'index.html').read_text()
+          s = s.replace('</head>', '<link rel="stylesheet" href="form.css?v=booking-1"><script src="form.js?v=booking-1" defer></script></head>')
+          s = s.replace('<form class="booking-card"', '<form data-accept-leads="true" class="booking-card"')
+          consent = '<label class="form-consent"><input type="checkbox" name="consent" required><span>Даю <a href="consent.html" target="_blank" rel="noopener">согласие на обработку персональных данных</a>. <a href="privacy.html" target="_blank" rel="noopener">Политика обработки данных</a>.</span></label><div class="form-trap" aria-hidden="true"><label>Ваш сайт<input name="website" tabindex="-1" autocomplete="off"></label></div>'
+          anchor = '<button class="button" type="submit"'
+          assert s.count(anchor) == 1
+          s = s.replace(anchor, consent + anchor)
+          s = s.replace('id="form-note">', 'id="form-note" role="status" aria-live="polite">')
+          (out / 'index.html').write_text(s)
+          (out / '.nojekyll').touch()
+          assert (out / 'assets/mun-logo.svg').is_file()
+          PY
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
