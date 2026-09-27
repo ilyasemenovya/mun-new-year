@@ -49,6 +49,20 @@ jobs:
           assert s.count(anchor) == 1
           s = s.replace(anchor, consent + anchor)
           s = s.replace('id="form-note">', 'id="form-note" role="status" aria-live="polite">')
+          s = s.replace('— 5 л', '— 3 л').replace('— 400 г', '— 240 г').replace('На 10 гостей', 'На 6 гостей').replace('two-menus-12', 'six-guests-1')
+          data_path = out / 'menu-data.js'
+          menus = json.loads(data_path.read_text().split('=', 1)[1].strip().rstrip(';'))
+          weights = {'500 г': '300 г', '700 г': '420 г', '1 кг': '600 г', '850 г': '480 г', '600 г': '360 г', '800 г': '480 г'}
+          for groups in menus.values():
+              for group in groups:
+                  group['note'] = group['note'].replace('10 гостей', '6 гостей')
+                  for dish in group['dishes']:
+                      if group['id'] in ('cold', 'hot'):
+                          dish['weight'] = weights[dish['weight']]
+                      if dish['name'] == 'Салат с лососем и миксом зелени':
+                          dish['weight'] = '130 г'
+                      dish['name'] = dish['name'].replace('Фруктовое ассорти с мандаринами', 'Сезонные фрукты с мандаринами')
+          data_path.write_text('const banquetMenus=' + json.dumps(menus, ensure_ascii=False) + ';')
           (out / 'index.html').write_text(s)
           (out / '.nojekyll').touch()
           assert (out / 'assets/mun-logo.svg').is_file()
