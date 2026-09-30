@@ -31,7 +31,7 @@ jobs:
         shell: bash
         run: |
           python3 - <<'PY'
-          import ast, json, shutil
+          import ast, json, shutil, re
           from pathlib import Path
           out = Path('public')
           shutil.copytree('source/site/new-year', out)
@@ -68,6 +68,8 @@ jobs:
           assert '113166324' not in s
           s = s.replace('</head>', "<script type=\"text/javascript\">(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=113166324','ym');ym(113166324,'init',{ssr:true,webvisor:true,clickmap:true,ecommerce:'dataLayer',referrer:document.referrer,url:location.href,accurateTrackBounce:true,trackLinks:true});document.addEventListener('DOMContentLoaded',function(){var form=document.querySelector('.booking-card');if(form){form.classList.add('ym-hide-content');form.addEventListener('booking:sent',function(){try{if(typeof window.ym==='function'){window.ym(113166324,'reachGoal','booking_sent');}}catch(e){}});}});</script>" + '</head>')
           s = s.replace('</body>', "<noscript><div><img src=\"https://mc.yandex.ru/watch/113166324\" style=\"position:absolute; left:-9999px;\" alt=\"\" /></div></noscript>" + '</body>')
+          s, removed = re.subn(r'<section\b[^>]*\bid="memories"[^>]*>.*?</section>', '', s, flags=re.S)
+          assert removed == 1, 'Expected one memories section'
           (out / 'index.html').write_text(s)
           (out / '.nojekyll').touch()
           assert (out / 'assets/mun-logo.svg').is_file()
