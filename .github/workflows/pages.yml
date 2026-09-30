@@ -63,6 +63,7 @@ jobs:
                           dish['weight'] = '130 г'
                       dish['name'] = dish['name'].replace('Фруктовое ассорти с мандаринами', 'Сезонные фрукты с мандаринами')
           data_path.write_text('const banquetMenus=' + json.dumps(menus, ensure_ascii=False) + ';')
+          s = s.replace('две банкетные комнаты до 20 гостей каждая', 'банкетная комната до 25 гостей').replace('2 комнаты · до 20 гостей в каждой', 'до 25 гостей').replace('Банкетные комнаты', 'Банкетная комната').replace('Профессиональный звук и караоке в каждой комнате.', 'Профессиональный звук и караоке.')
           (out / 'index.html').write_text(s)
           (out / '.nojekyll').touch()
           assert (out / 'assets/mun-logo.svg').is_file()
