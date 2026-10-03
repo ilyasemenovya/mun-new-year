@@ -70,6 +70,11 @@ jobs:
           s = s.replace('</body>', "<noscript><div><img src=\"https://mc.yandex.ru/watch/113166324\" style=\"position:absolute; left:-9999px;\" alt=\"\" /></div></noscript>" + '</body>')
           s, removed = re.subn(r'<section\b[^>]*\bid="memories"[^>]*>.*?</section>', '', s, flags=re.S)
           assert removed == 1, 'Expected one memories section'
+          s = s.replace('+7 (8352) 75-55-05', '+7 (8352) 755-305').replace('+78352755505', '+78352755305')
+          s = s.replace('form.js?v=booking-1', 'form.js?v=phone-755305')
+          for name in ('form.js', 'privacy.html', 'consent.html'):
+              p = out / name
+              p.write_text(p.read_text().replace('+7 (8352) 75-55-05', '+7 (8352) 755-305').replace('+78352755505', '+78352755305'))
           (out / 'index.html').write_text(s)
           (out / '.nojekyll').touch()
           assert (out / 'assets/mun-logo.svg').is_file()
