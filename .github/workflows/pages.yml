@@ -75,6 +75,10 @@ jobs:
           for name in ('form.js', 'privacy.html', 'consent.html'):
               p = out / name
               p.write_text(p.read_text().replace('+7 (8352) 75-55-05', '+7 (8352) 755-305').replace('+78352755505', '+78352755305'))
+          program_anchor = "<div><span>04</span><h3>Дед Мороз<br>и Снегурочка</h3></div>"
+          assert s.count(program_anchor) == 1
+          s = s.replace(program_anchor, program_anchor + "<div><span>05</span><h3>Фотограф</h3><p class=\"program-names\">Сохраним яркие моменты вашего вечера.</p></div>")
+          s = s.replace("</head>", "<style>@media(min-width:1001px){.program-list{grid-template-columns:repeat(5,minmax(0,1fr))}}@media(max-width:1000px){.program-list>div:last-child{grid-column:1/-1}}</style></head>")
           (out / 'index.html').write_text(s)
           (out / '.nojekyll').touch()
           assert (out / 'assets/mun-logo.svg').is_file()
