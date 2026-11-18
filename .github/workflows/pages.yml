@@ -87,6 +87,8 @@ jobs:
         run: |
           cp updates/mun-banquet-menu-3500-photos.pdf public/assets/menu-3500.pdf
           cp updates/mun-banquet-menu-4000-photos.pdf public/assets/menu-4000.pdf
+      - name: Apply approved Po rukam branding
+        run: python3 updates/rebrand.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
